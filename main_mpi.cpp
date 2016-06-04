@@ -1,17 +1,21 @@
 
-#include <iostream>
 #include <mpi.h>
+#include <stdio.h>
 
-int main(int argc, char *argv[])
+const int houses = 10;
+const int fences = 5;
+
+int main (int argc, char* argv[])
 {
-    int size, rank;
+    int rank, size;
+    auto x = 7;
 
-    MPI::Init(argc, argv);
-    auto c = 5; // c++11 test
-    size = MPI::COMM_WORLD.Get_size();
-    rank = MPI::COMM_WORLD.Get_rank();
-
+    MPI_Init (&argc, &argv);      /* starts MPI */
+    MPI_Comm_rank (MPI_COMM_WORLD, &rank);        /* get current process id */
+    MPI_Comm_size (MPI_COMM_WORLD, &size);        /* get number of processes */
     printf( "Hello world from process %d of %d\n", rank, size );
-    MPI::Finalize();
+
+
+    MPI_Finalize();
     return 0;
 }

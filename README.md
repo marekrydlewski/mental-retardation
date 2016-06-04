@@ -3,5 +3,5 @@ Złodzieje niedorozwoje okradają domy żeby zdać Przetwarzanie Rozproszone na 
 
 # how to launch
 
-mpic++ -std=c++0x main_mpi.cpp -o retards
-mpirun -np 2 ./retards
+mpic++ -std=c++0x main_mpi.cpp -o retards.out
+mpirun -np 2 ./retards.out

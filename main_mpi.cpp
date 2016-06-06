@@ -7,6 +7,7 @@
 #include "LamportClock.h"
 #include "Message.h"
 #include "RequestEnum.h"
+#include "Thief.h"
 
 const int numberOfHouses = 10;
 const int numberOfFences = 5;
@@ -49,26 +50,6 @@ void test(int rank)
     }
 }
 
-void sendRequestToAll(int processId, int clock, int requestType, int commSize)
-{
-    Message msg;
-
-    msg.processId = processId;
-    msg.clock = clock;
-    msg.requestType = requestType;
-
-    for(int i = 0; i < commSize; i++)
-    {
-        if (i != processId) MPI_Send(&msg, 1, mpi_message_type, i, 0, MPI_COMM_WORLD);
-    }
-}
-
-void enterHouseQueue(int processId, int clock, int commSize)
-{
-    sendRequestToAll(processId, clock, RequestEnum::ENTER_HOME, commSize);
-
-}
-
 int main (int argc, char* argv[])
 {
     // starting
@@ -79,11 +60,7 @@ int main (int argc, char* argv[])
     printf( "Hello world from process %d of %d\n", rank, size );
     mpi_message_type = initMpiStruct();
 
-    //declaration private data
-    std::vector<bool> houses(numberOfHouses, true);
-    int fences = numberOfFences;
-    std::vector<int> busyThieves;
-    auto clock = LamportClock();
+    Thief thief = Thief(rank, numberOfHouses, numberOfFences, size);
 
     test(rank);
 

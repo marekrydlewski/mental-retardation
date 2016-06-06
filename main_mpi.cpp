@@ -10,6 +10,7 @@
 
 const int numberOfHouses = 10;
 const int numberOfFences = 5;
+MPI_Datatype mpi_message_type;
 
 void enterHouseQueue()
 {
@@ -27,7 +28,6 @@ int main (int argc, char* argv[])
     const int numberOfItems = 3;
     int blockLengths[3] = {1,1,1};
     MPI_Datatype types[3] = {MPI_INT, MPI_INT, MPI_INT};
-    MPI_Datatype mpi_message_type;
     MPI_Aint offsets[3];
 
     offsets[0] = offsetof(Message, clock);

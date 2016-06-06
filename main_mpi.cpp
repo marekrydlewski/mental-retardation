@@ -12,8 +12,42 @@ const int numberOfHouses = 10;
 const int numberOfFences = 5;
 MPI_Datatype mpi_message_type;
 
-void enterHouseQueue()
+void test(int rank)
 {
+    MPI_Status status;
+    Message msg;
+    if(rank==0)
+    {
+        msg.clock = 20;
+        msg.processId = rank;
+        msg.requestType = RequestEnum::HOME_FREE;
+
+        MPI_Send(&msg, 1, mpi_message_type, 1, 0, MPI_COMM_WORLD);
+    }
+    else if (rank==1)
+    {
+        MPI_Recv(&msg, 1, mpi_message_type, 0, 0, MPI_COMM_WORLD, &status);
+        std::cout << "From " << msg.processId << ", type " << msg.requestType << ", clock " << msg.clock << std::endl;
+    }
+}
+
+Message sendRequestToAll(int processId, int clock, int requestType, int commSize)
+{
+    Message msg;
+
+    msg.processId = processId;
+    msg.clock = clock;
+    msg.requestType = requestType;
+
+    for(int i = 0; i < commSize; i++)
+    {
+        if (i != processId) MPI_Send(&msg, 1, mpi_message_type, i, 0, MPI_COMM_WORLD);
+    }
+}
+
+void enterHouseQueue(int processId, int clock, int commSize)
+{
+    sendRequestToAll(processId, clock, RequestEnum::ENTER_HOME, commSize);
 
 }
 
@@ -41,24 +75,9 @@ int main (int argc, char* argv[])
     
     std::vector<bool> houses(numberOfHouses, true);
     int fences = numberOfFences;
+    std::vector<int> busyThieves;
     auto clock = LamportClock();
 
-    MPI_Status status;
-
-    Message msg;
-    if(rank==0)
-    {
-        msg.clock = 20;
-        msg.processId = rank;
-        msg.requestType = RequestEnum::HOME_FREE;
-
-        MPI_Send(&msg, 1, mpi_message_type, 1, 0, MPI_COMM_WORLD);
-    }
-    else if (rank==1)
-    {
-        MPI_Recv(&msg, 1, mpi_message_type, 0, 0, MPI_COMM_WORLD, &status);
-        std::cout << "From " << msg.processId << ", type " << msg.requestType << ", clock " << msg.clock << std::endl;
-    }
 
     MPI_Finalize();
     return 0;

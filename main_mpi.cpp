@@ -60,7 +60,7 @@ int main (int argc, char* argv[])
     printf( "Hello world from process %d of %d\n", rank, size );
     mpi_message_type = initMpiStruct();
 
-    Thief thief = Thief(rank, numberOfHouses, numberOfFences, size);
+    auto thief = Thief(rank, numberOfHouses, numberOfFences, size);
 
     test(rank);
 

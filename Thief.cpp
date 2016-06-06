@@ -4,15 +4,18 @@
 
 #include "Thief.h"
 
+
 Thief::Thief(int processId, int numberOfHouses, int numberOfFences, int commSize)
 {
     this->processId = processId;
     this->numberOfHouses = numberOfHouses;
     this->numberOfFences = numberOfFences;
     this->commSize = commSize;
-    houses = new vector<bool>(numberOfHouses, true);
+    std::vector<bool> tempVec (numberOfHouses, true);
+    this->houses = tempVec;
     clock = LamportClock();
-}
+};
+
 
 void Thief::sendRequestToAll(int requestType)
 {

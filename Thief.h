@@ -12,11 +12,11 @@
 
 class Thief {
 private:
-    const int processId;
-    std::vector<bool>* houses;
-    const int numberOfHouses;
+    int processId;
+    int numberOfHouses;
+    int commSize;
     int numberOfFences;
-    const int commSize;
+    std::vector<bool> houses;
     std::vector<int> busyThieves;
     LamportClock clock;
 public:

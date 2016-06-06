@@ -8,7 +8,7 @@
 #include <mpi.h>
 #include <vector>
 #include "LamportClock.h"
-#include "Message.h"
+
 
 class Thief {
 private:
@@ -19,8 +19,9 @@ private:
     std::vector<bool> houses;
     std::vector<int> busyThieves;
     LamportClock clock;
+    MPI_Datatype mpi_message_type;
 public:
-    Thief(int processId, int numberOfHouses, int numberOfFences, int commSize);
+    Thief(int processId, int numberOfHouses, int numberOfFences, int commSize, MPI_Datatype mpi_message_type);
     void sendRequestToAll(int requestType);
     void enterHouseQueue();
 };

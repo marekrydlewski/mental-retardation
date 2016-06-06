@@ -3,14 +3,17 @@
 //
 
 #include "Thief.h"
+#include "Message.h"
+#include "RequestEnum.h"
 
-
-Thief::Thief(int processId, int numberOfHouses, int numberOfFences, int commSize)
+Thief::Thief(int processId, int numberOfHouses, int numberOfFences, int commSize,
+             MPI_Datatype mpi_message_type)
 {
     this->processId = processId;
     this->numberOfHouses = numberOfHouses;
     this->numberOfFences = numberOfFences;
     this->commSize = commSize;
+    this->mpi_message_type = mpi_message_type;
     std::vector<bool> tempVec (numberOfHouses, true);
     this->houses = tempVec;
     clock = LamportClock();
@@ -33,6 +36,6 @@ void Thief::sendRequestToAll(int requestType)
 
 void Thief::enterHouseQueue()
 {
-    sendRequestToAll(this->processId, this->clock.getClock(), RequestEnum::ENTER_HOME, this->commSize);
-
+    //sendRequestToAll(this->processId, this->clock.getClock(), RequestEnum::ENTER_HOME, this->commSize);
+    //wut? bad signature
 }

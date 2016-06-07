@@ -17,12 +17,13 @@ private:
     int commSize;
     int numberOfFences;
     std::vector<bool> houses;
-    std::vector<int> busyThieves;
+    std::vector<bool> busyThieves;
     LamportClock clock;
     MPI_Datatype mpi_message_type;
 public:
     Thief(int processId, int numberOfHouses, int numberOfFences, int commSize, MPI_Datatype mpi_message_type);
-    void sendRequestToAll(int requestType);
+    int sendRequestToAll(int requestType);
+    void getResponseFromAll(int requestType,int count);
     void enterHouseQueue();
 };
 

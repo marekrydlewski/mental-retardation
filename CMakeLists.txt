@@ -6,6 +6,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(SOURCE_FILES
     LamportClock.h
     main_mpi.cpp
-    Message.h MpiCreator.cpp MpiCreator.h)
+    Message.h MpiCreator.cpp MpiCreator.h Process.h)
 
 add_executable(mental_retardation ${SOURCE_FILES})

@@ -6,9 +6,10 @@ class LamportClock {
 private:
     int clock;
 public:
-    LamportClock(){clock = 0;};
-    int getClock(){return clock;};
-    void incrementClock(){++clock;};
+    LamportClock(){clock = 0;}
+    int getClock(){return clock;}
+    void incrementClock(){++clock;}
+    void setClock(int c){clock = c;}
 };
 
 

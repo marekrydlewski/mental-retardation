@@ -30,6 +30,7 @@ Thief::Thief(int processId, int numberOfHouses, int numberOfFences, int commSize
 int Thief::sendRequestToAll(int requestType) {
     Message msg;
 
+    this->clock.incrementClock();
     msg.processId = this->processId;
     msg.clock = this->clock.getClock();
     msg.requestType = requestType;
@@ -47,8 +48,14 @@ int Thief::sendRequestToAll(int requestType) {
 void Thief::getResponseFromAll(int requestType, int count) {
     MPI_Status status;
     Message msg;
+    std::vector<Process> queueVec;
     for (auto i = 0; i < count; ++i) {
         MPI_Recv(&msg, 1, mpi_message_type, MPI_ANY_SOURCE, requestType, MPI_COMM_WORLD, &status);
+        if (msg.clock > this->clock.getClock())
+            this->clock.setClock(msg.clock);
+        auto p = Process(msg.clock, msg.processId);
+        queueVec.push_back(p);
+
         //accepts from any source messages with tag requestType
         //taki jest plan xD
         //jakiś Lamport tutaj i kolejka???? tudzież wektor

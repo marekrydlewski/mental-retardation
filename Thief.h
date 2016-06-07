@@ -8,6 +8,7 @@
 #include <mpi.h>
 #include <vector>
 #include "LamportClock.h"
+#include "Process.h"
 
 
 class Thief {

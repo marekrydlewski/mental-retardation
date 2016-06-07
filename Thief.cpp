@@ -5,6 +5,7 @@
 #include "Thief.h"
 #include "Message.h"
 #include "RequestEnum.h"
+#include <iostream>
 
 Thief::Thief(int processId, int numberOfHouses, int numberOfFences, int commSize,
              MPI_Datatype mpi_message_type)
@@ -36,6 +37,5 @@ void Thief::sendRequestToAll(int requestType)
 
 void Thief::enterHouseQueue()
 {
-    //sendRequestToAll(this->processId, this->clock.getClock(), RequestEnum::ENTER_HOME, this->commSize);
-    //wut? bad signature
+    sendRequestToAll(RequestEnum::ENTER_HOME);
 }

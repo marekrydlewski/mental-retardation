@@ -1,12 +1,8 @@
 
 #include <mpi.h>
 #include <stdio.h>
-#include <vector>
-#include <cstddef>
 #include <iostream>
-#include "LamportClock.h"
 #include "Message.h"
-#include "RequestEnum.h"
 #include "Thief.h"
 
 const int numberOfHouses = 10;
@@ -31,25 +27,6 @@ MPI_Datatype initMpiStruct()
     return mpi_message_type;
 }
 
-void test(int rank)
-{
-    MPI_Status status;
-    Message msg;
-    if(rank==0)
-    {
-        msg.clock = 20;
-        msg.processId = rank;
-        msg.requestType = RequestEnum::HOME_FREE;
-
-        MPI_Send(&msg, 1, mpi_message_type, 1, 0, MPI_COMM_WORLD);
-    }
-    else if (rank==1)
-    {
-        MPI_Recv(&msg, 1, mpi_message_type, 0, 0, MPI_COMM_WORLD, &status);
-        std::cout << "From " << msg.processId << ", type " << msg.requestType << ", clock " << msg.clock << std::endl;
-    }
-}
-
 int main (int argc, char* argv[])
 {
     // starting
@@ -62,7 +39,6 @@ int main (int argc, char* argv[])
 
     auto thief = Thief(rank, numberOfHouses, numberOfFences, size, mpi_message_type);
 
-    test(rank);
 
     MPI_Finalize();
     return 0;

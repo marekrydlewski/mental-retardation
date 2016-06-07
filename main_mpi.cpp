@@ -1,11 +1,7 @@
 #include <mpi.h>
 #include <stdio.h>
-#include <vector>
-#include <cstddef>
 #include <iostream>
-#include "LamportClock.h"
 #include "Message.h"
-#include "RequestEnum.h"
 #include "Thief.h"
 
 const int numberOfHouses = 10;
@@ -45,7 +41,8 @@ void test(int rank) {
     }
 }
 
-int main(int argc, char *argv[]) {
+int main (int argc, char* argv[])
+{
     // starting
     int rank, size;
     MPI_Init(&argc, &argv);      /* starts MPI */

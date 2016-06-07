@@ -60,6 +60,6 @@ void Thief::enterHouseQueue() {
 
 void Thief::robbingHome() {
     std::mt19937 rnumber; // Mersenne Twister
-    std::uniform_int_distribution<unsigned> u (700, 2000); //700-2000ms
+    std::uniform_int_distribution<> u (700, 2000); //700-2000ms
     sleep(u(rnumber));
 }

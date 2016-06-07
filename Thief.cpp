@@ -58,6 +58,7 @@ void Thief::getResponseFromAll(int requestType, int count) {
 void Thief::enterHouseQueue() {
     int count = sendRequestToAll((int) RequestEnum::ENTER_HOME);
     getResponseFromAll((int) RequestEnum::ENTER_HOME, count);
+    printf("It works!!!! - process %d of %d\n", processId, commSize);
 }
 
 void Thief::robbingHome() {

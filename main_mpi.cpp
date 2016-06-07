@@ -55,7 +55,8 @@ int main (int argc, char* argv[])
     printf("Hello world from process %d of %d\n", rank, size);
     mpi_message_type = initMpiStruct();
     auto thief = Thief(rank, numberOfHouses, numberOfFences, size, mpi_message_type);
-    test(rank);
+    thief.enterHouseQueue();
+    //test(rank);
 
     MPI_Finalize();
     return 0;

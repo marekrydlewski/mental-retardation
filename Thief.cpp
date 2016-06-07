@@ -65,8 +65,3 @@ void Thief::robbingHome() {
     std::uniform_int_distribution<> u(700, 2000); //700-2000ms
     sleep(u(rnumber));
 }
-
-void Thief::enterHouseQueue()
-{
-    sendRequestToAll(RequestEnum::ENTER_HOME);
-}

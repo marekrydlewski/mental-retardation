@@ -3,6 +3,10 @@
 #include <iostream>
 #include "Message.h"
 #include "Thief.h"
+#include <cstddef>
+#include "LamportClock.h"
+#include "Thief.h"
+#include "RequestEnum.h"
 
 const int numberOfHouses = 10;
 const int numberOfFences = 5;

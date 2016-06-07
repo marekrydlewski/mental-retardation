@@ -18,6 +18,7 @@ private:
     int numberOfFences;
     std::vector<bool> houses;
     std::vector<bool> busyThieves;
+    std::vector<int> queueHouses;
     LamportClock clock;
     MPI_Datatype mpi_message_type;
 public:
@@ -25,6 +26,7 @@ public:
     int sendRequestToAll(int requestType);
     void getResponseFromAll(int requestType,int count);
     void enterHouseQueue();
+    void robbingHome();
 };
 
 

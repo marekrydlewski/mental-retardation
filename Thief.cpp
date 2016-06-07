@@ -5,6 +5,8 @@
 #include "Thief.h"
 #include "Message.h"
 #include "RequestEnum.h"
+#include <random>
+#include <unistd.h>
 
 Thief::Thief(int processId, int numberOfHouses, int numberOfFences, int commSize,
              MPI_Datatype mpi_message_type) {
@@ -54,4 +56,10 @@ void Thief::getResponseFromAll(int requestType, int count) {
 void Thief::enterHouseQueue() {
     int count = sendRequestToAll((int) RequestEnum::ENTER_HOME);
     getResponseFromAll((int) RequestEnum::ENTER_HOME, count);
+}
+
+void Thief::robbingHome() {
+    std::mt19937 rnumber; // Mersenne Twister
+    std::uniform_int_distribution<unsigned> u (700, 2000); //700-2000ms
+    sleep(u(rnumber));
 }

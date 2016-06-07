@@ -16,7 +16,7 @@ struct Process {
             return processId < other.processId;
         else
             return clock < other.clock;
-    }
+    } //fancy comparator
 };
 
 

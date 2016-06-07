@@ -7,6 +7,11 @@
 
 #include <mpi.h>
 #include <vector>
+#include <algorithm>
+#include <random>
+#include <unistd.h>
+#include <iostream>
+
 #include "LamportClock.h"
 #include "Process.h"
 
@@ -19,13 +24,14 @@ private:
     int numberOfFences;
     std::vector<bool> houses;
     std::vector<bool> busyThieves;
-    std::vector<int> queueHouses;
+    std::vector<Process> queueHouses;
     LamportClock clock;
     MPI_Datatype mpi_message_type;
 public:
     Thief(int processId, int numberOfHouses, int numberOfFences, int commSize, MPI_Datatype mpi_message_type);
     int sendRequestToAll(int requestType);
-    void getResponseFromAll(int requestType,int count);
+    int sendRequestToAvailable(int requestType);
+    std::vector<Process> getResponseFromAll(int requestType,int count);
     void enterHouseQueue();
     void robbingHome();
 };

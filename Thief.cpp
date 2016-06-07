@@ -6,9 +6,6 @@
 #include "Message.h"
 #include "RequestEnum.h"
 
-#include <random>
-#include <unistd.h>
-#include <iostream>
 
 Thief::Thief(int processId, int numberOfHouses, int numberOfFences, int commSize,
              MPI_Datatype mpi_message_type) {
@@ -37,6 +34,25 @@ int Thief::sendRequestToAll(int requestType) {
 
     auto count = 0;
     for (auto i = 0; i < commSize; i++) {
+        if (i != processId) { // nie wysyłamy do zajętych
+            MPI_Send(&msg, 1, mpi_message_type, i, requestType, MPI_COMM_WORLD); //requestType is a tag
+            ++count;
+        }
+    }
+    return count;
+}
+
+
+int Thief::sendRequestToAvailable(int requestType) {
+    Message msg;
+
+    this->clock.incrementClock();
+    msg.processId = this->processId;
+    msg.clock = this->clock.getClock();
+    msg.requestType = requestType;
+
+    auto count = 0;
+    for (auto i = 0; i < commSize; i++) {
         if (i != processId && !busyThieves[i]) { // nie wysyłamy do zajętych
             MPI_Send(&msg, 1, mpi_message_type, i, requestType, MPI_COMM_WORLD); //requestType is a tag
             ++count;
@@ -45,7 +61,7 @@ int Thief::sendRequestToAll(int requestType) {
     return count;
 }
 
-void Thief::getResponseFromAll(int requestType, int count) {
+std::vector<Process> Thief::getResponseFromAll(int requestType, int count) {
     MPI_Status status;
     Message msg;
     std::vector<Process> queueVec;
@@ -54,22 +70,33 @@ void Thief::getResponseFromAll(int requestType, int count) {
         if (msg.clock > this->clock.getClock())
             this->clock.setClock(msg.clock);
         auto p = Process(msg.clock, msg.processId);
-        queueVec.push_back(p);
-
-        //accepts from any source messages with tag requestType
-        //taki jest plan xD
-        //jakiś Lamport tutaj i kolejka???? tudzież wektor
+        queueVec.push_back(p); //vector queue
     }
+    std::sort(queueVec.begin(), queueVec.end()); //last item = biggest clock && rank
+    return queueVec;
 }
 
 void Thief::enterHouseQueue() {
-    int count = sendRequestToAll((int) RequestEnum::ENTER_HOME);
-    getResponseFromAll((int) RequestEnum::ENTER_HOME, count);
+    int count = sendRequestToAvailable((int) RequestEnum::HOUSE_REQUEST);
+    queueHouses = getResponseFromAll((int) RequestEnum::HOUSE_REQUEST, count); // I'm using cast, because it's recommended
+    if (queueHouses.back().clock == this->clock.getClock() && queueHouses.back().processId == this->processId)
+    {
+
+        this->sendRequestToAll((int)RequestEnum::ENTER_HOME); // need to pass home id
+        this->robbingHome();
+        this->sendRequestToAll((int)RequestEnum::HOME_FREE);
+    }
+    else
+    {
+        //waiting
+    }
     printf("It works!!!! - process %d of %d\n", processId, commSize);
 }
 
 void Thief::robbingHome() {
     std::mt19937 rnumber; // Mersenne Twister
     std::uniform_int_distribution<> u(700, 2000); //700-2000ms
+    printf("Robbing in progress - process %d of %d\n", processId, commSize);
     sleep(u(rnumber));
+    printf("Robbing ended - process %d of %d\n", processId, commSize);
 }

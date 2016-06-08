@@ -81,9 +81,12 @@ void Thief::enterHouseQueue() {
     queueHouses = getResponseFromAll((int) RequestEnum::HOUSE_REQUEST,
                                      count); // I'm using cast, because it's recommended
     if (queueHouses.back().clock == this->clock.getClock() && queueHouses.back().processId == this->processId) {
-        this->sendRequestToAll((int) RequestEnum::ENTER_HOME); // need to pass home id
-        this->robbingHome();
-        this->sendRequestToAll((int) RequestEnum::HOME_FREE);
+        auto idHouse = isHouseFree();
+        if (idHouse != -1) {
+            this->sendRequestToAll((int) RequestEnum::ENTER_HOME); // need to pass home id
+            this->robbingHome();
+            this->sendRequestToAll((int) RequestEnum::HOME_FREE);
+        }
     }
     else {
         //waiting
@@ -105,5 +108,5 @@ int Thief::isHouseFree() {
         if (houses[i])
             return i;
     }
-    return -1;
+    return -1; //return the lowest free id
 }

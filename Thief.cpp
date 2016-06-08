@@ -89,15 +89,16 @@ void Thief::enterHouseQueue() {
         if(position <= freeHouses.size())
         {
             //taking nth house
-            houses[position - 1] = false;
+            houses[freeHouses[position - 1]] = false;
             this->sendRequestToAll((int) RequestEnum::ENTER_HOME); // need to pass home id
             this->robbingHome();
-            houses[position - 1] = true;
+            houses[freeHouses[position - 1]] = true;
             this->sendRequestToAll((int) RequestEnum::HOME_FREE);
         }
     }
     else {
         //waiting
+        // TU JEBNIJMY WUCHTE RECEIVÓW
     }
 
     printf("It works!!!! - process %d of %d\n", processId, commSize);

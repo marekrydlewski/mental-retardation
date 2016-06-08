@@ -14,6 +14,7 @@
 
 #include "LamportClock.h"
 #include "Process.h"
+#include "Message.h"
 
 
 class Thief {
@@ -22,6 +23,7 @@ private:
     int numberOfHouses;
     int commSize;
     int numberOfFences;
+    int status;
     std::vector<bool> houses;
     std::vector<bool> busyThieves;
     std::vector<Process> queueHouses;
@@ -31,12 +33,13 @@ public:
     Thief(int processId, int numberOfHouses, int numberOfFences, int commSize, MPI_Datatype mpi_message_type);
     int sendRequestToAll(int requestType, int info);
     int sendRequestToAvailable(int requestType, int info);
-    int isHouseFree(); //returns id of first free house
+    int getLowestFreeHouseId(); //returns id of first free house
     int getMyPosition();
     std::vector<Process> getResponseFromAll(int requestType,int count);
     std::vector<int> getFreeHouses();
     void enterHouseQueue();
     void robbingHome();
+    void respondToRequest(Message msg, int requestType);
 };
 
 

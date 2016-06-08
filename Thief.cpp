@@ -78,16 +78,14 @@ std::vector<Process> Thief::getResponseFromAll(int requestType, int count) {
 
 void Thief::enterHouseQueue() {
     int count = sendRequestToAvailable((int) RequestEnum::HOUSE_REQUEST);
-    queueHouses = getResponseFromAll((int) RequestEnum::HOUSE_REQUEST, count); // I'm using cast, because it's recommended
-    if (queueHouses.back().clock == this->clock.getClock() && queueHouses.back().processId == this->processId)
-    {
-
-        this->sendRequestToAll((int)RequestEnum::ENTER_HOME); // need to pass home id
+    queueHouses = getResponseFromAll((int) RequestEnum::HOUSE_REQUEST,
+                                     count); // I'm using cast, because it's recommended
+    if (queueHouses.back().clock == this->clock.getClock() && queueHouses.back().processId == this->processId) {
+        this->sendRequestToAll((int) RequestEnum::ENTER_HOME); // need to pass home id
         this->robbingHome();
-        this->sendRequestToAll((int)RequestEnum::HOME_FREE);
+        this->sendRequestToAll((int) RequestEnum::HOME_FREE);
     }
-    else
-    {
+    else {
         //waiting
     }
     printf("It works!!!! - process %d of %d\n", processId, commSize);
@@ -99,4 +97,13 @@ void Thief::robbingHome() {
     printf("Robbing in progress - process %d of %d\n", processId, commSize);
     sleep(u(rnumber));
     printf("Robbing ended - process %d of %d\n", processId, commSize);
+}
+
+
+int Thief::isHouseFree() {
+    for (auto i = 0; i < houses.size(); ++i) {
+        if (houses[i])
+            return i;
+    }
+    return -1;
 }

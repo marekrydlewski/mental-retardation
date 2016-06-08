@@ -22,7 +22,7 @@ MPI_Datatype initMpiStruct() {
 
     offsets[0] = offsetof(Message, clock);
     offsets[1] = offsetof(Message, processId);
-    offsets[2] = offsetof(Message, requestType);
+    offsets[2] = offsetof(Message, info);
 
     MPI_Type_create_struct(numberOfItems, blockLengths, offsets, types, &mpi_message_type);
     MPI_Type_commit(&mpi_message_type);
@@ -35,13 +35,13 @@ void test(int rank) {
     if (rank == 0) {
         msg.clock = 20;
         msg.processId = rank;
-        msg.requestType = RequestEnum::HOME_FREE;
+        msg.info = RequestEnum::HOME_FREE;
 
         MPI_Send(&msg, 1, mpi_message_type, 1, 0, MPI_COMM_WORLD);
     }
     else if (rank == 1) {
         MPI_Recv(&msg, 1, mpi_message_type, 0, 0, MPI_COMM_WORLD, &status);
-        std::cout << "From " << msg.processId << ", type " << msg.requestType << ", clock " << msg.clock << std::endl;
+        std::cout << "From " << msg.processId << ", info " << msg.info << ", clock " << msg.clock << std::endl;
     }
 }
 

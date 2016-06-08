@@ -24,13 +24,13 @@ Thief::Thief(int processId, int numberOfHouses, int numberOfFences, int commSize
 }
 
 
-int Thief::sendRequestToAll(int requestType) {
+int Thief::sendRequestToAll(int requestType, int info = -1) {
     Message msg;
 
     this->clock.incrementClock();
     msg.processId = this->processId;
     msg.clock = this->clock.getClock();
-    msg.requestType = requestType;
+    msg.info = info;
 
     auto count = 0;
     for (auto i = 0; i < commSize; i++) {
@@ -43,13 +43,13 @@ int Thief::sendRequestToAll(int requestType) {
 }
 
 
-int Thief::sendRequestToAvailable(int requestType) {
+int Thief::sendRequestToAvailable(int requestType, int info = -1) {
     Message msg;
 
     this->clock.incrementClock();
     msg.processId = this->processId;
     msg.clock = this->clock.getClock();
-    msg.requestType = requestType;
+    msg.info = info;
 
     auto count = 0;
     for (auto i = 0; i < commSize; i++) {
@@ -72,31 +72,28 @@ std::vector<Process> Thief::getResponseFromAll(int requestType, int count) {
         auto p = Process(msg.clock, msg.processId);
         queueVec.push_back(p); //vector queue
     }
-    queueVec.push_back(Process(clock.getClock(),processId)); // add itself to queue
+    queueVec.push_back(Process(clock.getClock(), processId)); // add itself to queue
     std::sort(queueVec.begin(), queueVec.end()); //last item = biggest clock && rank
     return queueVec;
 }
 
 void Thief::enterHouseQueue() {
     int count = sendRequestToAvailable((int) RequestEnum::HOUSE_REQUEST);
-    queueHouses = getResponseFromAll((int) RequestEnum::HOUSE_REQUEST,
+    //
+    queueHouses = getResponseFromAll((int) RequestEnum::HOUSE_REQUEST_ACK,
                                      count); // I'm using cast, because it's recommended
 
-    if (isHouseFree() != - 1)
-    {
-        auto position = getMyPosition();
-        auto freeHouses = getFreeHouses();
-        if(position <= freeHouses.size())
-        {
-            //taking nth house
-            houses[freeHouses[position - 1]] = false;
-            this->sendRequestToAll((int) RequestEnum::ENTER_HOME); // need to pass home id
+    if (queueHouses.back().clock == this->clock.getClock() && queueHouses.back().processId == this->processId) {
+        if (isHouseFree() != -1) {
+            houses[isHouseFree()] = false;
+            this->sendRequestToAll((int) RequestEnum::ENTER_HOME, isHouseFree());
             this->robbingHome();
-            houses[freeHouses[position - 1]] = true;
-            this->sendRequestToAll((int) RequestEnum::HOME_FREE);
+            houses[isHouseFree()] = true;
+            this->sendRequestToAll((int) RequestEnum::HOME_FREE, isHouseFree());
         }
     }
     else {
+
         //waiting
         // TU JEBNIJMY WUCHTE RECEIVÓW
     }
@@ -122,7 +119,7 @@ int Thief::isHouseFree() {
 }
 
 int Thief::getMyPosition() {
-    for(auto i =0; i<queueHouses.size(); ++i){
+    for (auto i = 0; i < queueHouses.size(); ++i) {
         if (queueHouses[i].processId == processId && queueHouses[i].clock == clock.getClock())
             return queueHouses.size() - i;//returns 1 when i'm first, 2 when second etc.
     }

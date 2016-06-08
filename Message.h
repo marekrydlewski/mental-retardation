@@ -9,7 +9,7 @@
 struct Message {
     int clock;
     int processId;
-    int requestType;
+    int info;
 };
 
 

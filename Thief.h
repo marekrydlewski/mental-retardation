@@ -29,8 +29,8 @@ private:
     MPI_Datatype mpi_message_type;
 public:
     Thief(int processId, int numberOfHouses, int numberOfFences, int commSize, MPI_Datatype mpi_message_type);
-    int sendRequestToAll(int requestType);
-    int sendRequestToAvailable(int requestType);
+    int sendRequestToAll(int requestType, int info);
+    int sendRequestToAvailable(int requestType, int info);
     int isHouseFree(); //returns id of first free house
     int getMyPosition();
     std::vector<Process> getResponseFromAll(int requestType,int count);

@@ -34,7 +34,7 @@ int Thief::sendRequestToAll(int requestType) {
 
     auto count = 0;
     for (auto i = 0; i < commSize; i++) {
-        if (i != processId) { // nie wysyłamy do zajętych
+        if (i != processId) {
             MPI_Send(&msg, 1, mpi_message_type, i, requestType, MPI_COMM_WORLD); //requestType is a tag
             ++count;
         }
@@ -72,6 +72,7 @@ std::vector<Process> Thief::getResponseFromAll(int requestType, int count) {
         auto p = Process(msg.clock, msg.processId);
         queueVec.push_back(p); //vector queue
     }
+    queueVec.push_back(Process(clock.getClock(),processId)); // add itself to queue
     std::sort(queueVec.begin(), queueVec.end()); //last item = biggest clock && rank
     return queueVec;
 }
@@ -80,17 +81,25 @@ void Thief::enterHouseQueue() {
     int count = sendRequestToAvailable((int) RequestEnum::HOUSE_REQUEST);
     queueHouses = getResponseFromAll((int) RequestEnum::HOUSE_REQUEST,
                                      count); // I'm using cast, because it's recommended
-    if (queueHouses.back().clock == this->clock.getClock() && queueHouses.back().processId == this->processId) {
-        auto idHouse = isHouseFree();
-        if (idHouse != -1) {
+
+    if (isHouseFree() != - 1)
+    {
+        auto position = getMyPosition();
+        auto freeHouses = getFreeHouses();
+        if(position <= freeHouses.size())
+        {
+            //taking nth house
+            houses[position - 1] = false;
             this->sendRequestToAll((int) RequestEnum::ENTER_HOME); // need to pass home id
             this->robbingHome();
+            houses[position - 1] = true;
             this->sendRequestToAll((int) RequestEnum::HOME_FREE);
         }
     }
     else {
         //waiting
     }
+
     printf("It works!!!! - process %d of %d\n", processId, commSize);
 }
 
@@ -109,4 +118,20 @@ int Thief::isHouseFree() {
             return i;
     }
     return -1; //return the lowest free id
+}
+
+int Thief::getMyPosition() {
+    for(auto i =0; i<queueHouses.size(); ++i){
+        if (queueHouses[i].processId == processId && queueHouses[i].clock == clock.getClock())
+            return queueHouses.size() - i;//returns 1 when i'm first, 2 when second etc.
+    }
+    return -1;
+}
+
+std::vector<int> Thief::getFreeHouses() {
+    auto out = std::vector<int>();
+    for (auto i = 0; i < houses.size(); ++i) {
+        if (houses[i]) out.push_back(i);
+    }
+    return out;
 }

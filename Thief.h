@@ -32,7 +32,9 @@ public:
     int sendRequestToAll(int requestType);
     int sendRequestToAvailable(int requestType);
     int isHouseFree(); //returns id of first free house
+    int getMyPosition();
     std::vector<Process> getResponseFromAll(int requestType,int count);
+    std::vector<int> getFreeHouses();
     void enterHouseQueue();
     void robbingHome();
 };

@@ -8,7 +8,9 @@ enum RequestEnum
     ENTER_HOME,
     HOME_FREE,
     FENCE_REQUEST,
-    FENCE_FREE
+    FENCE_REQUEST_ACK,
+    FENCE_FREE,
+    ENTER_FENCE
 };
 
 #endif

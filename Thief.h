@@ -30,6 +30,7 @@ private:
     std::vector<bool> houses;
     std::vector<bool> busyThieves;
     std::vector<Process> queueHouses;
+    std::vector<Process> queueFences;
     LamportClock clock;
     MPI_Datatype mpi_message_type;
 public:
@@ -47,6 +48,7 @@ public:
         return (queueHouses.back().clock == timestamp && queueHouses.back().processId == this->processId);
     };
     void robbingHomeWithInfo();
+    void enterFenceQueue();
 };
 
 

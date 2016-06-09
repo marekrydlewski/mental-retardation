@@ -10,6 +10,7 @@ struct Message {
     int clock;
     int processId;
     int info;
+    int timestamp;
 };
 
 

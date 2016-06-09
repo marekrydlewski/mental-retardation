@@ -11,6 +11,8 @@
 #include <random>
 #include <unistd.h>
 #include <iostream>
+#include <thread>
+#include <chrono>
 
 #include "LamportClock.h"
 #include "Process.h"
@@ -24,6 +26,7 @@ private:
     int commSize;
     int numberOfFences;
     int status;
+    int timestamp;
     std::vector<bool> houses;
     std::vector<bool> busyThieves;
     std::vector<Process> queueHouses;
@@ -40,6 +43,10 @@ public:
     void enterHouseQueue();
     void robbingHome();
     void respondToRequest(Message msg, int requestType);
+    bool firstInQueue(){
+        return (queueHouses.back().clock == timestamp && queueHouses.back().processId == this->processId);
+    };
+    void robbingHomeWithInfo();
 };
 
 

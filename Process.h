@@ -13,6 +13,13 @@ struct Process {
     bool operator<(Process other) const
     {
         if (clock == other.clock)
+            return processId < other.processId;
+        else
+            return clock < other.clock;
+    } //fancy comparator
+    bool operator>(Process other) const
+    {
+        if (clock == other.clock)
             return processId > other.processId;
         else
             return clock > other.clock;

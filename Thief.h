@@ -42,13 +42,14 @@ public:
     std::vector<Process> getResponseFromAll(int requestType,int count);
     std::vector<int> getFreeHouses();
     void enterHouseQueue();
-    void robbingHome();
+    void pause();
     void respondToRequest(Message msg, int requestType);
-    bool firstInQueue(){
-        return (queueHouses.back().clock == timestamp && queueHouses.back().processId == this->processId);
+    bool firstInQueue(std::vector<Process> queue){
+        return (queue.back().clock == timestamp && queue.back().processId == this->processId);
     };
     void robbingHomeWithInfo();
     void enterFenceQueue();
+    void doingBusiness();
 };
 
 

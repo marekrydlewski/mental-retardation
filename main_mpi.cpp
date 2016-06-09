@@ -9,7 +9,7 @@
 #include "RequestEnum.h"
 
 const int numberOfHouses = 2;
-const int numberOfFences = 5;
+const int numberOfFences = 1;
 
 MPI_Datatype mpi_message_type;
 

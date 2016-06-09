@@ -265,7 +265,7 @@ void Thief::robbingHomeWithInfo() {
     printf("Robbing in progress - process %d of %d\n", processId, commSize);
     this->pause();
     printf("Robbing ended - process %d of %d\n", processId, commSize);
-    //enterFenceQueue();
+    enterFenceQueue();
     houses[homeId] = true;
     ++timestamp;
     this->sendRequestToAll((int) RequestEnum::HOME_FREE, homeId);

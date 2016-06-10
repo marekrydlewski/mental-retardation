@@ -179,11 +179,14 @@ void Thief::respondToRequest(Message msg, int requestType)
     }
     else if(requestType == RequestEnum::ENTER_HOME)
     {
-        this->houses[msg.info] = false;
+        this->houses.at(msg.info) = false;
     }
     else if(requestType == RequestEnum::HOME_FREE) {
-        this->houses[msg.info] = true;
-        queueHouses.pop_back();
+        this->houses.at(msg.info) = true;
+        // intelligent pop back xD
+        queueHouses.erase(std::remove_if(queueHouses.begin(), queueHouses.end(), [&msg](const Process& p)
+        { return p.processId == msg.processId; }), queueHouses.end());
+        //queueHouses.pop_back();
     }
     else if(requestType == RequestEnum::FENCE_REQUEST)
     {
@@ -218,7 +221,9 @@ void Thief::respondToRequest(Message msg, int requestType)
     else if(requestType == RequestEnum::FENCE_FREE)
     {
         this->numberOfFences++;
-        queueFences.pop_back();
+        queueFences.erase(std::remove_if(queueFences.begin(), queueFences.end(), [&msg](const Process& p)
+        { return p.processId == msg.processId; }), queueFences.end());
+        //queueFences.pop_back();
     }
 }
 
@@ -236,14 +241,14 @@ void Thief::robbingHomeWithInfo() {
         respondToRequest(msg, status.MPI_TAG);
     }
     int homeId = getLowestFreeHouseId();
-    houses[homeId] = false;
+    houses.at(homeId) = false;
     ++timestamp;
     printf("%d: Process %d, (%d) entering free house %d\n", timestamp, processId, RequestEnum::ENTER_HOME, homeId);
     this->sendRequestToAll((int) RequestEnum::ENTER_HOME, homeId);
     this->status = StatusEnum::BUSY;
     this->pause();
     enterFenceQueue();
-    houses[homeId] = true;
+    houses.at(homeId) = true;
     ++timestamp;
     printf("%d: Process %d, (%d) leaving house %d\n", timestamp, processId, RequestEnum::HOME_FREE, homeId);
     this->sendRequestToAll((int) RequestEnum::HOME_FREE, homeId);

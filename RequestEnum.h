@@ -4,10 +4,13 @@
 enum RequestEnum
 {
     HOUSE_REQUEST = 0,
+    HOUSE_REQUEST_ACK,
     ENTER_HOME,
-    HOME_FREE,
     FENCE_REQUEST,
-    FENCE_FREE
+    FENCE_REQUEST_ACK,
+    ENTER_FENCE,
+    FENCE_FREE,
+    HOME_FREE
 };
 
 #endif

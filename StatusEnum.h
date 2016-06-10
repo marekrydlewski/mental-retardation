@@ -1,0 +1,15 @@
+//
+// Created by marcin on 08.06.16.
+//
+
+#ifndef MENTAL_RETARDATION_STATUSENUM_H
+#define MENTAL_RETARDATION_STATUSENUM_H
+
+enum StatusEnum
+{
+    BUSY = 0,
+    HOUSE_QUEUED,
+    FENCE_QUEUED
+};
+
+#endif //MENTAL_RETARDATION_STATUSENUM_H

@@ -46,27 +46,6 @@ int Thief::sendRequestToAll(int requestType, int info = -1) {
     return count;
 }
 
-
-int Thief::sendRequestToAvailable(int requestType, int info = -1) {
-    Message msg;
-
-    msg.processId = this->processId;
-    msg.info = info;
-    msg.timestamp = timestamp;
-
-    auto count = 0;
-    for (auto i = 0; i < commSize; i++) {
-        if (i != processId && !busyThieves[i]) { // nie wysyłamy do zajętych
-
-            this->clock.incrementClock();
-            msg.clock = this->clock.getClock();
-            MPI_Send(&msg, 1, mpi_message_type, i, requestType, MPI_COMM_WORLD); //requestType is a tag
-            ++count;
-        }
-    }
-    return count;
-}
-
 std::vector<Process> Thief::getResponseFromAll(int requestType, int count) {
     Message msg;
     MPI_Status status;
@@ -89,7 +68,6 @@ std::vector<Process> Thief::getResponseFromAll(int requestType, int count) {
                 queueVec.push_back(p); //vector queue
             }
             processedRequests++;
-            //printf("Process %d received clock %d from process %d\n", this->processId, msg.clock, msg.processId);
         }
         else
         {
@@ -108,39 +86,18 @@ std::vector<Process> Thief::getResponseFromAll(int requestType, int count) {
 }
 
 void Thief::enterHouseQueue() {
-    /*
-    int count = sendRequestToAvailable((int) RequestEnum::HOUSE_REQUEST);
-    //
-    queueHouses = getResponseFromAll((int) RequestEnum::HOUSE_REQUEST_ACK,
-                                     count); // I'm using cast, because it's recommended
-
-    if (queueHouses.back().clock == this->clock.getClock() && queueHouses.back().processId == this->processId) {
-        if (getLowestFreeHouseId() != -1) {
-            houses[getLowestFreeHouseId()] = false;
-            this->sendRequestToAll((int) RequestEnum::ENTER_HOME, getLowestFreeHouseId());
-            this->robbingHome();
-            houses[getLowestFreeHouseId()] = true;
-            this->sendRequestToAll((int) RequestEnum::HOME_FREE, getLowestFreeHouseId());
-        }
-    }
-    else {
-
-        //waiting
-        // TU JEBNIJMY WUCHTE RECEIVÓW
-    }
-
-    printf("It works!!!! - process %d of %d\n", processId, commSize);
-     */
     this->status = StatusEnum::HOUSE_QUEUED;
     ++timestamp;
+    printf("%d: Process %d, (%d) requesting house\n", timestamp, processId, RequestEnum::HOUSE_REQUEST);
     int count = sendRequestToAll((int) RequestEnum::HOUSE_REQUEST);
     queueHouses = getResponseFromAll((int) RequestEnum::HOUSE_REQUEST_ACK, count);
-    printf("Process %d clock %d : first in queue pid %d clock %d \n", this->processId, timestamp, queueHouses.back().processId, queueHouses.back().clock);
-    if(firstInQueue())
+    if(firstInQueue(queueHouses))
     {
+        printf("%d: Process %d, (%d) in position to enter house\n", timestamp, processId, RequestEnum::HOUSE_REQUEST_ACK);
         robbingHomeWithInfo();
     }
     else {
+        printf("%d: Process %d, (%d) waiting for position allowing to get into house\n", timestamp, processId, RequestEnum::HOUSE_REQUEST_ACK);
         bool flag = false;
         Message msg;
         MPI_Status status;
@@ -152,65 +109,25 @@ void Thief::enterHouseQueue() {
             if (msg.clock > this->clock.getClock())
                 this->clock.setClock(msg.clock + 1);
 
-            if(status.MPI_TAG == RequestEnum::HOUSE_REQUEST)
-            {
-                bool update = false;
-                for(auto &el : queueHouses)
-                {
-                    if(el.processId == msg.processId)
-                    {
-                        el.clock = msg.timestamp;
-                        update = true;
-                        break;
-                    }
-                }
-                if(!update)
-                {
-                    auto p = Process(msg.timestamp, msg.processId);
-                    queueHouses.push_back(p); //vector queue
-                }
-                std::sort(queueHouses.begin(), queueHouses.end(), std::greater<Process>()); //last item = lowest clock && rank
-                respondToRequest(msg, status.MPI_TAG);
-            }
-            else if(status.MPI_TAG == RequestEnum::ENTER_HOME)
-            {
-                printf("Enter home got it! - process %d of %d\n", processId, commSize);
-                //queueHouses.pop_back(); // need to find home && process later
-            }
-            else if(status.MPI_TAG == RequestEnum::HOME_FREE)
-            {
-                printf("Home free got it! - process %d of %d\n", processId, commSize);
-                queueHouses.pop_back(); // need to find home && process later
-                if((firstInQueue())) // if not first, continue loop
-                    flag = true; // in that place we should update busy houses etc.
-                else
-                    flag = false;
-            }
+            respondToRequest(msg, status.MPI_TAG);
+
+            if((firstInQueue(queueHouses))) // if not first, continue loop
+                flag = true; // in that place we should update busy houses etc.
         }
+        printf("%d: Process %d, (%d) in position to enter house\n", timestamp, processId, RequestEnum::HOUSE_REQUEST_ACK);
         robbingHomeWithInfo();
     }
 }
 
-void Thief::robbingHome() {
+void Thief::pause() {
     auto s = rand() % 2000 + 1000;
-    printf("Robbing in progress - process %d of %d sleep %d\n", processId, commSize,s );
     std::this_thread::sleep_for(std::chrono::milliseconds(s));
-    printf("Robbing ended - process %d of %d\n", processId, commSize);
 }
 
-
-int Thief::getLowestFreeHouseId() {
-    for (auto i = 0; i < houses.size(); ++i) {
-        if (houses[i])
-            return i;
-    }
-    return -1; //return the lowest free id
-}
-
-int Thief::getMyPosition() {
-    for (auto i = 0; i < queueHouses.size(); ++i) {
-        if (queueHouses[i].processId == processId && queueHouses[i].clock == clock.getClock())
-            return queueHouses.size() - i;//returns 1 when i'm first, 2 when second etc.
+int Thief::getMyPosition(std::vector<Process> queue) {
+    for (auto i = 0; i < queue.size(); ++i) {
+        if (queue[i].processId == processId && queue[i].clock == timestamp)
+            return queue.size() - i;//returns 1 when i'm first, 2 when second etc.
     }
     return -1;
 }
@@ -223,11 +140,36 @@ std::vector<int> Thief::getFreeHouses() {
     return out;
 }
 
+int Thief::getLowestFreeHouseId() {
+    for (auto i = 0; i < houses.size(); ++i) {
+        if (houses[i])
+            return i;
+    }
+    return -1; //return the lowest free id
+}
+
 void Thief::respondToRequest(Message msg, int requestType)
 {
     Message response;
     if(requestType == (int) RequestEnum::HOUSE_REQUEST)
     {
+        bool update = false;
+        for(auto &el : queueHouses)
+        {
+            if(el.processId == msg.processId)
+            {
+                el.clock = msg.timestamp;
+                update = true;
+                break;
+            }
+        }
+        if(!update)
+        {
+            auto p = Process(msg.timestamp, msg.processId);
+            queueHouses.push_back(p); //vector queue
+        }
+        std::sort(queueHouses.begin(), queueHouses.end(), std::greater<Process>()); //last item = lowest clock && rank
+
         this->clock.incrementClock();
         response.processId = this->processId;
         response.clock = this->clock.getClock();
@@ -235,16 +177,120 @@ void Thief::respondToRequest(Message msg, int requestType)
         response.timestamp = timestamp;
         MPI_Send(&response, 1, mpi_message_type, msg.processId, (int) RequestEnum::HOUSE_REQUEST_ACK, MPI_COMM_WORLD);
     }
+    else if(requestType == RequestEnum::ENTER_HOME)
+    {
+        this->houses[msg.info] = false;
+    }
+    else if(requestType == RequestEnum::HOME_FREE) {
+        this->houses[msg.info] = true;
+        queueHouses.pop_back();
+    }
+    else if(requestType == RequestEnum::FENCE_REQUEST)
+    {
+        bool update = false;
+        for(auto &el : queueFences)
+        {
+            if(el.processId == msg.processId)
+            {
+                el.clock = msg.timestamp;
+                update = true;
+                break;
+            }
+        }
+        if(!update)
+        {
+            auto p = Process(msg.timestamp, msg.processId);
+            queueFences.push_back(p); //vector queue
+        }
+        std::sort(queueFences.begin(), queueFences.end(), std::greater<Process>()); //last item = lowest clock && rank
+
+        this->clock.incrementClock();
+        response.processId = this->processId;
+        response.clock = this->clock.getClock();
+        response.info = this->status;
+        response.timestamp = timestamp;
+        MPI_Send(&response, 1, mpi_message_type, msg.processId, (int) RequestEnum::FENCE_REQUEST_ACK, MPI_COMM_WORLD);
+    }
+    else if(requestType == RequestEnum::ENTER_FENCE)
+    {
+        this->numberOfFences--;
+    }
+    else if(requestType == RequestEnum::FENCE_FREE)
+    {
+        this->numberOfFences++;
+        queueFences.pop_back();
+    }
 }
 
 void Thief::robbingHomeWithInfo() {
-    if (getLowestFreeHouseId() != -1) {
-        houses[getLowestFreeHouseId()] = false;
-        ++timestamp;
-        this->sendRequestToAll((int) RequestEnum::ENTER_HOME, getLowestFreeHouseId());
-        this->robbingHome();
-        houses[getLowestFreeHouseId()] = true;
-        ++timestamp;
-        this->sendRequestToAll((int) RequestEnum::HOME_FREE, getLowestFreeHouseId());
+    Message msg;
+    MPI_Status status;
+    while(getLowestFreeHouseId() == -1)
+    {
+        this->clock.incrementClock();
+        MPI_Recv(&msg, 1, mpi_message_type, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+
+        if (msg.clock > this->clock.getClock())
+            this->clock.setClock(msg.clock + 1);
+
+        respondToRequest(msg, status.MPI_TAG);
     }
+    int homeId = getLowestFreeHouseId();
+    houses[homeId] = false;
+    ++timestamp;
+    printf("%d: Process %d, (%d) entering free house %d\n", timestamp, processId, RequestEnum::ENTER_HOME, homeId);
+    this->sendRequestToAll((int) RequestEnum::ENTER_HOME, homeId);
+    this->status = StatusEnum::BUSY;
+    this->pause();
+    enterFenceQueue();
+    houses[homeId] = true;
+    ++timestamp;
+    printf("%d: Process %d, (%d) leaving house %d\n", timestamp, processId, RequestEnum::HOME_FREE, homeId);
+    this->sendRequestToAll((int) RequestEnum::HOME_FREE, homeId);
+
+}
+
+void Thief::enterFenceQueue() {
+    this->status = StatusEnum::FENCE_QUEUED;
+    ++timestamp;
+    printf("%d: Process %d, (%d) awaiting free fence\n", timestamp, processId, RequestEnum::FENCE_REQUEST);
+    int count = sendRequestToAll((int) RequestEnum::FENCE_REQUEST);
+    queueFences = getResponseFromAll((int) RequestEnum::FENCE_REQUEST_ACK, count);
+    if(getMyPosition(queueFences) <= numberOfFences)
+    {
+        doingBusiness();
+    }
+    else {
+        bool flag = false;
+        Message msg;
+        MPI_Status status;
+        printf("%d: Process %d, (%d) fence not yet available, waiting\n", timestamp, processId, RequestEnum::FENCE_REQUEST_ACK);
+        while(!flag)
+        {
+            this->clock.incrementClock();
+            MPI_Recv(&msg, 1, mpi_message_type, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+
+            if (msg.clock > this->clock.getClock())
+                this->clock.setClock(msg.clock + 1);
+
+            respondToRequest(msg, status.MPI_TAG);
+
+            if(getMyPosition(queueFences) <= numberOfFences) // if not first, continue loop
+                flag = true; // in that place we should update busy houses etc.
+        }
+        doingBusiness();
+    }
+}
+
+void Thief::doingBusiness() {
+    numberOfFences--;
+    ++timestamp;
+    printf("%d: Process %d, (%d) entering free fence\n", timestamp, processId, RequestEnum::ENTER_FENCE);
+    this->sendRequestToAll((int) RequestEnum::ENTER_FENCE);
+    this->status = StatusEnum::BUSY;
+    this->pause();
+    numberOfFences++;
+    ++timestamp;
+    printf("%d: Process %d, (%d) in position to get fence\n", timestamp, processId, RequestEnum::FENCE_FREE);
+    this->sendRequestToAll((int) RequestEnum::FENCE_FREE);
 }

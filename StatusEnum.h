@@ -8,7 +8,8 @@
 enum StatusEnum
 {
     BUSY = 0,
-    HOUSE_QUEUED
+    HOUSE_QUEUED,
+    FENCE_QUEUED
 };
 
 #endif //MENTAL_RETARDATION_STATUSENUM_H

@@ -30,23 +30,25 @@ private:
     std::vector<bool> houses;
     std::vector<bool> busyThieves;
     std::vector<Process> queueHouses;
+    std::vector<Process> queueFences;
     LamportClock clock;
     MPI_Datatype mpi_message_type;
 public:
     Thief(int processId, int numberOfHouses, int numberOfFences, int commSize, MPI_Datatype mpi_message_type);
     int sendRequestToAll(int requestType, int info);
-    int sendRequestToAvailable(int requestType, int info);
     int getLowestFreeHouseId(); //returns id of first free house
-    int getMyPosition();
     std::vector<Process> getResponseFromAll(int requestType,int count);
-    std::vector<int> getFreeHouses();
     void enterHouseQueue();
-    void robbingHome();
+    int getMyPosition(std::vector<Process> queue);
+    std::vector<int> getFreeHouses();
+    void pause();
     void respondToRequest(Message msg, int requestType);
-    bool firstInQueue(){
-        return (queueHouses.back().clock == timestamp && queueHouses.back().processId == this->processId);
+    bool firstInQueue(std::vector<Process> queue){
+        return (queue.back().clock == timestamp && queue.back().processId == this->processId);
     };
     void robbingHomeWithInfo();
+    void enterFenceQueue();
+    void doingBusiness();
 };
 
 

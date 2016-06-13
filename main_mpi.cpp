@@ -4,12 +4,9 @@
 #include "Message.h"
 #include "Thief.h"
 #include <cstddef>
-#include "LamportClock.h"
-#include "Thief.h"
-#include "RequestEnum.h"
 
-const int numberOfHouses = 7;
-const int numberOfFences = 8;
+int numberOfHouses = 7;
+int numberOfFences = 8;
 
 MPI_Datatype mpi_message_type;
 
@@ -38,6 +35,29 @@ int main (int argc, char* argv[])
     MPI_Init(&argc, &argv);      /* starts MPI */
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);        /* get current process id */
     MPI_Comm_size(MPI_COMM_WORLD, &size);        /* get number of processes */
+    if (argc != 1)
+    {
+        for (auto i = 1; i < argc; ++i) {
+            std::string arg = argv[i];
+            if (arg == "--help") {
+                if (rank == 0) std::cout << "\t" << "-h/--houses: number of houses, -f/--fences: number of fences" << std::endl;
+                exit(0);
+            } else if ((arg == "-h") || (arg == "--houses")) {
+                if (i + 1 < argc) {
+                    numberOfHouses = atoi(argv[i+1]);
+                }
+            } else if ((arg == "-f") || (arg == "--fences")) {
+                if (i + 1 < argc) {
+                    numberOfFences = atoi(argv[i+1]);
+                }
+            }
+        }
+    }
+    else if (rank == 0)
+    {
+        std::cout<<"Run with default params: houses - " << numberOfHouses << " " << "fences - " << numberOfFences << std::endl;
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
     srand( time( NULL ) * rank);
     mpi_message_type = initMpiStruct();
     auto thief = Thief(rank, numberOfHouses, numberOfFences, size, mpi_message_type);

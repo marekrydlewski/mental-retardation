@@ -108,7 +108,8 @@ void Thief::enterHouseQueue() {
            RequestEnum::HOUSE_REQUEST);
     int count = sendRequestToModulo((int) RequestEnum::HOUSE_REQUEST);
     queueHouses = getResponseFromAll((int) RequestEnum::HOUSE_REQUEST_ACK, count);
-    if (firstInQueue(queueHouses)) {
+    auto pos = getMyPosition(queueHouses);
+    if (pos != -1 && pos <= numberOfHouses && houses[pos - 1]) {
         printf("Lamport % d - %d: Process %d, (%d) in position to enter house\n", clock.getClock(), timestamp,
                processId, RequestEnum::HOUSE_REQUEST_ACK);
         robbingHomeWithInfo();
@@ -127,8 +128,8 @@ void Thief::enterHouseQueue() {
                 this->clock.setClock(msg.clock + 1);
 
             respondToRequest(msg, status.MPI_TAG);
-
-            if ((firstInQueue(queueHouses))) // if not first, continue loop
+            auto pos = getMyPosition(queueHouses);
+            if (pos != -1 && pos <= numberOfHouses && houses[pos - 1]) // if not first, continue loop
                 flag = true; // in that place we should update busy houses etc.
         }
         printf("Lamport %d - %d: Process %d, (%d) in position to enter house\n", clock.getClock(), timestamp, processId,
@@ -234,18 +235,8 @@ void Thief::respondToRequest(Message msg, int requestType) {
 }
 
 void Thief::robbingHomeWithInfo() {
-    Message msg;
-    MPI_Status status;
-    while (getLowestFreeHouseId() == -1) {
-        this->clock.incrementClock();
-        MPI_Recv(&msg, 1, mpi_message_type, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-
-        if (msg.clock > this->clock.getClock())
-            this->clock.setClock(msg.clock + 1);
-
-        respondToRequest(msg, status.MPI_TAG);
-    }
-    int homeId = getLowestFreeHouseId();
+    int homeId = getMyPosition(queueHouses);
+    printf("position: %d\n", homeId);
     houses.at(homeId) = false;
     ++timestamp;
     printf("Lamport %d - %d: Process %d, (%d) entering free house %d\n", clock.getClock(), timestamp, processId,
@@ -295,6 +286,7 @@ void Thief::enterFenceQueue() {
 }
 
 void Thief::doingBusiness() {
+
     numberOfFences--;
     ++timestamp;
     printf("Lamport %d - %d: Process %d, (%d) entering free fence\n", clock.getClock(), timestamp, processId,

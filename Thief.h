@@ -36,6 +36,7 @@ private:
 public:
     Thief(int processId, int numberOfHouses, int numberOfFences, int commSize, MPI_Datatype mpi_message_type);
     int sendRequestToAll(int requestType, int info);
+    int sendRequestToModulo(int requestType, int info);
     int getLowestFreeHouseId(); //returns id of first free house
     std::vector<Process> getResponseFromAll(int requestType,int count);
     void enterHouseQueue();

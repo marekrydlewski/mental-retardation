@@ -8,8 +8,8 @@
 #include "Thief.h"
 #include "RequestEnum.h"
 
-const int numberOfHouses = 3;
-const int numberOfFences = 5;
+const int numberOfHouses = 7;
+const int numberOfFences = 8;
 
 MPI_Datatype mpi_message_type;
 

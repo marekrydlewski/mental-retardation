@@ -46,6 +46,27 @@ int Thief::sendRequestToAll(int requestType, int info = -1) {
     return count;
 }
 
+
+int Thief::sendRequestToModulo(int requestType, int info = -1) {
+    Message msg;
+
+    msg.processId = this->processId;
+    msg.info = info;
+    msg.timestamp = timestamp;
+
+    auto count = 0;
+    auto mod = numberOfHouses - 1 % processId;
+    for (auto i = mod; i < commSize; i+=numberOfHouses - 1) {
+        if (i != processId) {
+            this->clock.incrementClock();
+            msg.clock = this->clock.getClock();
+            MPI_Send(&msg, 1, mpi_message_type, i, requestType, MPI_COMM_WORLD); //requestType is a tag
+            ++count;
+        }
+    }
+    return count;
+}
+
 std::vector<Process> Thief::getResponseFromAll(int requestType, int count) {
     Message msg;
     MPI_Status status;

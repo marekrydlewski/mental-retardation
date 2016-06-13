@@ -55,7 +55,7 @@ int Thief::sendRequestToModulo(int requestType, int info = -1) {
     msg.timestamp = timestamp;
 
     auto count = 0;
-    auto mod = processId % numberOfHouses - 1;
+    auto mod = processId % (numberOfHouses - 1);
     for (auto i = mod; i < commSize; i+=numberOfHouses) {
         if (i != processId) {
             this->clock.incrementClock();
@@ -159,10 +159,8 @@ std::vector<int> Thief::getFreeHouses() {
 }
 
 int Thief::getLowestFreeHouseId() {
-    for (auto i = 0; i < houses.size(); ++i) {
-        if (houses[i])
-            return i;
-    }
+    auto h = houses[processId % (numberOfHouses - 1)];
+    if (h) return h;
     return -1; //return the lowest free id
 }
 

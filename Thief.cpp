@@ -159,8 +159,8 @@ std::vector<int> Thief::getFreeHouses() {
 }
 
 int Thief::getLowestFreeHouseId() {
-    auto h = houses[processId % (numberOfHouses - 1)];
-    if (h) return processId % (numberOfHouses - 1);
+    auto h = houses[processId % (numberOfHouses )];
+    if (h) return processId % (numberOfHouses );
     return -1; //return the lowest free id
 }
 

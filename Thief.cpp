@@ -55,8 +55,8 @@ int Thief::sendRequestToModulo(int requestType, int info = -1) {
     msg.timestamp = timestamp;
 
     auto count = 0;
-    auto mod = numberOfHouses - 1 % processId;
-    for (auto i = mod; i < commSize; i+=numberOfHouses - 1) {
+    auto mod = processId % numberOfHouses - 1;
+    for (auto i = mod; i < commSize; i+=numberOfHouses) {
         if (i != processId) {
             this->clock.incrementClock();
             msg.clock = this->clock.getClock();
@@ -106,7 +106,7 @@ void Thief::enterHouseQueue() {
     ++timestamp;
     printf("Lamport %d - %d: Process %d, (%d) requesting house\n", clock.getClock(), timestamp, processId,
            RequestEnum::HOUSE_REQUEST);
-    int count = sendRequestToAll((int) RequestEnum::HOUSE_REQUEST);
+    int count = sendRequestToModulo((int) RequestEnum::HOUSE_REQUEST);
     queueHouses = getResponseFromAll((int) RequestEnum::HOUSE_REQUEST_ACK, count);
     if (firstInQueue(queueHouses)) {
         printf("Lamport % d - %d: Process %d, (%d) in position to enter house\n", clock.getClock(), timestamp,

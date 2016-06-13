@@ -216,8 +216,8 @@ void Thief::respondToRequest(Message msg, int requestType) {
 }
 
 void Thief::robbingHomeWithInfo() {
-    int homeId = getMyPosition(queueHouses);
-    printf("position: %d\n", homeId);
+    int homeId = getMyPosition(queueHouses) - 1;
+    printf("position: %d\n", homeId + 1);
     houses.at(homeId) = false;
     ++timestamp;
     printf("Lamport %d - %d: Process %d, (%d) entering free house %d\n", clock.getClock(), timestamp, processId,

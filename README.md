@@ -1,5 +1,5 @@
-# mental-retardation
-Złodzieje niedorozwoje okradają domy żeby zdać Przetwarzanie Rozproszone na studiach
+# mental-retardation - distributed computing project
+Thieves rob houses in distributed environment
 
 # how to launch
 
